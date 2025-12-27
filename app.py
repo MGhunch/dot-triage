@@ -135,45 +135,6 @@ def increment_client_job_number(client_code):
         return f"{client_code} TBC", None, None, None
 
 
-def create_project(job_number, job_name, description, project_owner, client_record_id):
-    """Create a new project record.
-    
-    Returns the new record ID or None on failure.
-    """
-    if not AIRTABLE_API_KEY:
-        print("No Airtable API key configured")
-        return None
-    
-    try:
-        job_data = {
-            'fields': {
-                'Job Number': job_number,
-                'Project Name': job_name,
-                'Description': description,
-                'Status': 'In Progress',
-                'Stage': 'Triage',
-                'Project Owner': project_owner,
-                'Start Date': date.today().isoformat()
-            }
-        }
-        
-        # Add client link if we have the record ID
-        if client_record_id:
-            job_data['fields']['Client Link'] = [client_record_id]
-        
-        create_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_PROJECTS_TABLE}"
-        response = httpx.post(create_url, headers=_get_airtable_headers(), json=job_data, timeout=10.0)
-        response.raise_for_status()
-        
-        new_record = response.json()
-        print(f"Created project: {job_number}")
-        return new_record.get('id')
-        
-    except Exception as e:
-        print(f"Error creating project in Airtable: {e}")
-        return None
-
-
 # ===================
 # TRIAGE ENDPOINT
 # ===================
@@ -225,18 +186,8 @@ def triage():
             sharepoint_url = None
             client_record_id = None
         
-        # Create job record in Airtable
-        job_record_id = None
-        if job_number and 'TBC' not in job_number:
-            job_record_id = create_project(
-                job_number=job_number,
-                job_name=analysis.get('jobName', 'Untitled'),
-                description=analysis.get('jobSummary', ''),
-                project_owner=analysis.get('projectOwner', 'TBC'),
-                client_record_id=client_record_id
-            )
-        
         # Return complete analysis with job info
+        # Power Automate handles Airtable write (needs Teams Channel ID)
         return jsonify({
             'jobNumber': job_number,
             'jobName': analysis.get('jobName', 'Untitled'),
@@ -245,7 +196,6 @@ def triage():
             'projectOwner': analysis.get('projectOwner', ''),
             'teamId': team_id,
             'sharepointUrl': sharepoint_url,
-            'jobRecordId': job_record_id,
             'emailBody': analysis.get('emailBody', ''),
             'fullAnalysis': analysis
         })

@@ -8,15 +8,19 @@ CORE PRINCIPLE: Treat explicit information as fact. Use logic to form provisiona
 
 Identify the client from the email content (company name, email domain, signature):
 
-@one.nz, One NZ → Name: One NZ → Code: ONE
+@one.nz, One NZ → Name: One NZ (Marketing) → Code: ONE
 @one.nz + from Tracey Barclay OR "Simplification" mentioned → Name: One NZ (Simplification) → Code: ONS
+@one.nz + "Business" mentioned → Name: One NZ (Business) → Code: ONB
 @sky.co.nz, Sky, Sky TV → Name: Sky → Code: SKY
 @tower.co.nz, @tower.com, Tower, Tower Insurance → Name: Tower → Code: TOW
 @fisherfunds.co.nz, Fisher Funds → Name: Fisher Funds → Code: FIS
 @firestop.co.nz, Firestop → Name: Firestop → Code: FST
 @whakarongorau.nz, Whakarongorau, Healthline → Name: Whakarongorau → Code: WKA
 @labour.org.nz, Labour → Name: Labour → Code: LAB
+@eonfibre.co.nz, Eon Fibre → Name: Eon Fibre → Code: EON
+@westpac.co.nz, Westpac → Name: Westpac → Code: WES
 @hunch.co.nz, Hunch → Name: Hunch → Code: HUN
+Unknown client → Name: Other → Code: OTH
 No match or unknown → Name: TBC → Code: TBC
 
 IMPORTANT: Ignore @hunch.co.nz addresses when identifying the client (these are forwarding headers). Only return Code: HUN if there are NO other client identifiers in the email.
@@ -26,7 +30,7 @@ IMPORTANT: Ignore @hunch.co.nz addresses when identifying the client (these are 
 Return ONLY valid JSON (no markdown, no explanation):
 
 {
-  "clientCode": "[ONE/ONS/SKY/TOW/FIS/FST/WKA/LAB/HUN/TBC]",
+  "clientCode": "[ONE/ONS/ONB/SKY/TOW/FIS/FST/WKA/LAB/EON/WES/HUN/OTH/TBC]",
   "clientName": "[Client business name]",
   "projectOwner": "[Client contact name or 'TBC']",
   "jobName": "[Max 35 chars - short project name only]",
