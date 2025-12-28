@@ -43,12 +43,12 @@ Return ONLY valid JSON (no markdown, no explanation):
   "what": "[What behaviour or belief change are we targeting?]",
   "why": "[What's the real human motivation? What problem are they feeling?]",
   "questions": ["[Question 1]", "[Question 2]"],
-  "emailBody": "[Formatted HTML - see template below]"
+  "teamsPost": "[Formatted plain HTML for Teams - see template below]"
 }
 
-=== TEMPLATE FOR emailBody ===
+=== TEMPLATE FOR teamsPost ===
 
-Use this HTML structure:
+Use this HTML structure (simple formatting for Teams):
 
 <b>Client:</b> [clientName]<br>
 <b>Project Owner:</b> [projectOwner]<br>

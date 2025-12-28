@@ -100,6 +100,36 @@ def get_client_by_code(client_code):
         return None
 
 
+def get_triage_header():
+    """Fetch the Triage header image URL from SYSTEM record."""
+    if not AIRTABLE_API_KEY:
+        return None
+    
+    try:
+        search_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_CLIENTS_TABLE}"
+        params = {'filterByFormula': "{Client code}='SYSTEM'"}
+        
+        response = httpx.get(search_url, headers=_get_airtable_headers(), params=params, timeout=10.0)
+        response.raise_for_status()
+        
+        records = response.json().get('records', [])
+        
+        if not records:
+            return None
+        
+        fields = records[0].get('fields', {})
+        wip_headers = fields.get('Wip headers', [])
+        
+        if wip_headers:
+            return wip_headers[0].get('url', None)
+        
+        return None
+        
+    except Exception as e:
+        print(f"Error fetching triage header: {e}")
+        return None
+
+
 def increment_client_job_number(client_code):
     """Increment and return the next job number for a client.
     
@@ -136,6 +166,152 @@ def increment_client_job_number(client_code):
 
 
 # ===================
+# EMAIL BUILDER
+# ===================
+
+def build_triage_email(job_number, analysis, header_url=None):
+    """Build styled HTML email for triage summary."""
+    
+    today = date.today().strftime('%d %B %Y')
+    
+    # Header image or fallback text
+    if header_url:
+        header_content = f'<img src="{header_url}" width="600" style="width: 100%; max-width: 600px; height: auto; display: block;" alt="Hunch Triage">'
+    else:
+        header_content = '<span style="font-size: 28px; font-weight: bold; color: #ED1C24;">HUNCH &mdash; TRIAGE</span>'
+    
+    # Build questions list
+    questions = analysis.get('questions', [])
+    questions_html = ''.join([f'<p style="margin: 0 0 8px 0;">&bull; {q}</p>' for q in questions])
+    
+    html = f'''<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!--[if mso]>
+  <style type="text/css">
+    table {{border-collapse: collapse; border-spacing: 0; margin: 0;}}
+    div, td {{padding: 0;}}
+    div {{margin: 0 !important;}}
+  </style>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    @media screen and (max-width: 600px) {{
+      .wrapper {{
+        width: 100% !important;
+        padding: 12px !important;
+      }}
+    }}
+  </style>
+</head>
+<body style="margin: 0; padding: 0; font-family: Calibri, Arial, sans-serif; background-color: #f5f5f5; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%;">
+  
+  <table class="wrapper" width="600" cellpadding="0" cellspacing="0" style="width: 600px; max-width: 100%; margin: 0 0 0 20px; background-color: #ffffff;">
+    
+    <!-- Header -->
+    <tr>
+      <td style="border-bottom: 4px solid #ED1C24; padding: 0 20px 20px 20px;">
+        {header_content}
+        <p style="margin: 15px 0 0 0; font-size: 22px; font-weight: bold; color: #333;">{job_number} &mdash; {analysis.get('jobName', 'New Project')}</p>
+        <p style="margin: 5px 0 0 0; font-size: 12px; color: #999;">{today}</p>
+      </td>
+    </tr>
+    
+    <!-- Job Details Section -->
+    <tr>
+      <td style="padding: 20px 20px 0 20px;">
+        <div style="background-color: #ED1C24; color: #ffffff; padding: 8px 15px; font-size: 14px; font-weight: bold; border-radius: 3px;">
+          JOB DETAILS
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 15px 20px; border-bottom: 1px solid #eee;">
+        <table cellpadding="0" cellspacing="0" style="font-size: 14px; color: #333; width: 100%;">
+          <tr><td style="padding: 4px 0; width: 120px; color: #888;"><strong>Client</strong></td><td style="padding: 4px 0;">{analysis.get('clientName', 'TBC')}</td></tr>
+          <tr><td style="padding: 4px 0; color: #888;"><strong>Project Owner</strong></td><td style="padding: 4px 0;">{analysis.get('projectOwner', 'TBC')}</td></tr>
+          <tr><td style="padding: 4px 0; color: #888;"><strong>Objective</strong></td><td style="padding: 4px 0;">{analysis.get('objective', 'TBC')}</td></tr>
+          <tr><td style="padding: 4px 0; color: #888;"><strong>Live Date</strong></td><td style="padding: 4px 0;">{analysis.get('liveDate', 'TBC')}</td></tr>
+        </table>
+      </td>
+    </tr>
+    
+    <!-- The Job Section -->
+    <tr>
+      <td style="padding: 20px 20px 0 20px;">
+        <div style="background-color: #ED1C24; color: #ffffff; padding: 8px 15px; font-size: 14px; font-weight: bold; border-radius: 3px;">
+          THE JOB &mdash; What needs to be done?
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 15px 20px; border-bottom: 1px solid #eee;">
+        <table cellpadding="0" cellspacing="0" style="font-size: 14px; color: #333; width: 100%;">
+          <tr><td style="padding: 4px 0; width: 120px; color: #888;"><strong>Hunch Ask</strong></td><td style="padding: 4px 0;">{analysis.get('hunchAsk', 'TBC')}</td></tr>
+          <tr><td style="padding: 4px 0; color: #888;"><strong>Next Action</strong></td><td style="padding: 4px 0;">{analysis.get('nextAction', 'TBC')}</td></tr>
+        </table>
+      </td>
+    </tr>
+    
+    <!-- The Customer Section -->
+    <tr>
+      <td style="padding: 20px 20px 0 20px;">
+        <div style="background-color: #ED1C24; color: #ffffff; padding: 8px 15px; font-size: 14px; font-weight: bold; border-radius: 3px;">
+          THE CUSTOMER &mdash; Why will anyone care?
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 15px 20px; border-bottom: 1px solid #eee;">
+        <table cellpadding="0" cellspacing="0" style="font-size: 14px; color: #333; width: 100%;">
+          <tr><td style="padding: 4px 0; width: 120px; color: #888;"><strong>Who</strong></td><td style="padding: 4px 0;">{analysis.get('who', 'TBC')}</td></tr>
+          <tr><td style="padding: 4px 0; color: #888;"><strong>What</strong></td><td style="padding: 4px 0;">{analysis.get('what', 'TBC')}</td></tr>
+          <tr><td style="padding: 4px 0; color: #888;"><strong>Why</strong></td><td style="padding: 4px 0;">{analysis.get('why', 'TBC')}</td></tr>
+        </table>
+      </td>
+    </tr>
+    
+    <!-- Questions Section -->
+    <tr>
+      <td style="padding: 20px 20px 0 20px;">
+        <div style="background-color: #999999; color: #ffffff; padding: 8px 15px; font-size: 14px; font-weight: bold; border-radius: 3px;">
+          QUESTIONS
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 15px 20px; color: #333; font-size: 14px;">
+        {questions_html if questions_html else '<p style="margin: 0; color: #888;">No questions at this stage.</p>'}
+      </td>
+    </tr>
+    
+    <!-- Footer -->
+    <tr>
+      <td style="padding: 25px 20px; border-top: 1px solid #eee; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #888; font-style: italic;">Dot captures known facts and flags gaps. Scope and insight may change once the humans dig in.</p>
+        <p style="margin: 12px 0 0 0; font-size: 13px; color: #888; font-weight: bold;">Any questions or queries, <a href="mailto:michael@hunch.co.nz" style="color: #888;">get in touch</a></p>
+        <p style="margin: 8px 0 0 0; font-size: 12px; color: #999;">Triage by Dot</p>
+      </td>
+    </tr>
+    
+  </table>
+  
+</body>
+</html>'''
+    
+    return html
+
+
+# ===================
 # TRIAGE ENDPOINT
 # ===================
 
@@ -150,7 +326,8 @@ def triage():
         - jobNumber: New job number
         - jobName: Extracted project name
         - All triage analysis fields
-        - emailBody: Formatted triage summary HTML
+        - emailBody: Styled HTML for email
+        - teamsPost: Plain HTML for Teams
     """
     try:
         data = request.get_json()
@@ -186,6 +363,12 @@ def triage():
             sharepoint_url = None
             client_record_id = None
         
+        # Get triage header image
+        header_url = get_triage_header()
+        
+        # Build styled email
+        email_body = build_triage_email(job_number, analysis, header_url)
+        
         # Return complete analysis with job info
         # Power Automate handles Airtable write (needs Teams Channel ID)
         return jsonify({
@@ -196,7 +379,8 @@ def triage():
             'projectOwner': analysis.get('projectOwner', ''),
             'teamId': team_id,
             'sharepointUrl': sharepoint_url,
-            'emailBody': analysis.get('emailBody', ''),
+            'emailBody': email_body,
+            'teamsPost': analysis.get('teamsPost', ''),
             'fullAnalysis': analysis
         })
         
@@ -223,7 +407,7 @@ def health():
     return jsonify({
         'status': 'healthy',
         'service': 'Dot Triage',
-        'version': '2.0'
+        'version': '2.1'
     })
 
 
