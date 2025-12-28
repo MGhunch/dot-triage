@@ -226,11 +226,11 @@ def build_triage_email(job_number, analysis, header_url=None):
       </td>
     </tr>
     
-    <!-- Job Details Section -->
+    <!-- Topline Detail Section -->
     <tr>
       <td style="padding: 20px 20px 0 20px;">
         <div style="background-color: #ED1C24; color: #ffffff; padding: 8px 15px; font-size: 14px; font-weight: bold; border-radius: 3px;">
-          JOB DETAILS
+          TOPLINE: Who, what, when?
         </div>
       </td>
     </tr>
@@ -238,18 +238,18 @@ def build_triage_email(job_number, analysis, header_url=None):
       <td style="padding: 15px 20px; border-bottom: 1px solid #eee;">
         <table cellpadding="0" cellspacing="0" style="font-size: 14px; color: #333; width: 100%;">
           <tr><td style="padding: 4px 0; width: 120px; color: #888;"><strong>Client</strong></td><td style="padding: 4px 0;">{analysis.get('clientName', 'TBC')}</td></tr>
-          <tr><td style="padding: 4px 0; color: #888;"><strong>Project Owner</strong></td><td style="padding: 4px 0;">{analysis.get('projectOwner', 'TBC')}</td></tr>
+          <tr><td style="padding: 4px 0; color: #888;"><strong>Owner</strong></td><td style="padding: 4px 0;">{analysis.get('projectOwner', 'TBC')}</td></tr>
           <tr><td style="padding: 4px 0; color: #888;"><strong>Objective</strong></td><td style="padding: 4px 0;">{analysis.get('objective', 'TBC')}</td></tr>
           <tr><td style="padding: 4px 0; color: #888;"><strong>Live Date</strong></td><td style="padding: 4px 0;">{analysis.get('liveDate', 'TBC')}</td></tr>
         </table>
       </td>
     </tr>
     
-    <!-- The Job Section -->
+    <!-- The Project Section -->
     <tr>
       <td style="padding: 20px 20px 0 20px;">
         <div style="background-color: #ED1C24; color: #ffffff; padding: 8px 15px; font-size: 14px; font-weight: bold; border-radius: 3px;">
-          THE JOB &mdash; What needs to be done?
+          THE PROJECT: What needs to be done?
         </div>
       </td>
     </tr>
@@ -266,16 +266,16 @@ def build_triage_email(job_number, analysis, header_url=None):
     <tr>
       <td style="padding: 20px 20px 0 20px;">
         <div style="background-color: #ED1C24; color: #ffffff; padding: 8px 15px; font-size: 14px; font-weight: bold; border-radius: 3px;">
-          THE CUSTOMER &mdash; Why will anyone care?
+          THE CUSTOMER: Why will anyone care?
         </div>
       </td>
     </tr>
     <tr>
       <td style="padding: 15px 20px; border-bottom: 1px solid #eee;">
         <table cellpadding="0" cellspacing="0" style="font-size: 14px; color: #333; width: 100%;">
-          <tr><td style="padding: 4px 0; width: 120px; color: #888;"><strong>Who</strong></td><td style="padding: 4px 0;">{analysis.get('who', 'TBC')}</td></tr>
-          <tr><td style="padding: 4px 0; color: #888;"><strong>What</strong></td><td style="padding: 4px 0;">{analysis.get('what', 'TBC')}</td></tr>
-          <tr><td style="padding: 4px 0; color: #888;"><strong>Why</strong></td><td style="padding: 4px 0;">{analysis.get('why', 'TBC')}</td></tr>
+          <tr><td style="padding: 4px 0; width: 120px; color: #888;"><strong>Who?</strong></td><td style="padding: 4px 0;">{analysis.get('who', 'TBC')}</td></tr>
+          <tr><td style="padding: 4px 0; color: #888;"><strong>What?</strong></td><td style="padding: 4px 0;">{analysis.get('what', 'TBC')}</td></tr>
+          <tr><td style="padding: 4px 0; color: #888;"><strong>Why?</strong></td><td style="padding: 4px 0;">{analysis.get('why', 'TBC')}</td></tr>
         </table>
       </td>
     </tr>
@@ -289,8 +289,8 @@ def build_triage_email(job_number, analysis, header_url=None):
       </td>
     </tr>
     <tr>
-      <td style="padding: 15px 20px; color: #333; font-size: 14px;">
-        {questions_html if questions_html else '<p style="margin: 0; color: #888;">No questions at this stage.</p>'}
+      <td style="padding: 15px 20px; color: #888; font-size: 14px;">
+        {questions_html if questions_html else '<p style="margin: 0;">No questions at this stage.</p>'}
       </td>
     </tr>
     
@@ -299,7 +299,6 @@ def build_triage_email(job_number, analysis, header_url=None):
       <td style="padding: 25px 20px; border-top: 1px solid #eee; text-align: center;">
         <p style="margin: 0; font-size: 12px; color: #888; font-style: italic;">Dot captures known facts and flags gaps. Scope and insight may change once the humans dig in.</p>
         <p style="margin: 12px 0 0 0; font-size: 13px; color: #888; font-weight: bold;">Any questions or queries, <a href="mailto:michael@hunch.co.nz" style="color: #888;">get in touch</a></p>
-        <p style="margin: 8px 0 0 0; font-size: 12px; color: #999;">Triage by Dot</p>
       </td>
     </tr>
     
