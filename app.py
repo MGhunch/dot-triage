@@ -101,33 +101,8 @@ def get_client_by_code(client_code):
 
 
 def get_triage_header():
-    """Fetch the Triage header image URL from SYSTEM record."""
-    if not AIRTABLE_API_KEY:
-        return None
-    
-    try:
-        search_url = f"https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_CLIENTS_TABLE}"
-        params = {'filterByFormula': "{Client code}='SYSTEM'"}
-        
-        response = httpx.get(search_url, headers=_get_airtable_headers(), params=params, timeout=10.0)
-        response.raise_for_status()
-        
-        records = response.json().get('records', [])
-        
-        if not records:
-            return None
-        
-        fields = records[0].get('fields', {})
-        wip_headers = fields.get('Wip headers', [])
-        
-        if wip_headers:
-            return wip_headers[0].get('url', None)
-        
-        return None
-        
-    except Exception as e:
-        print(f"Error fetching triage header: {e}")
-        return None
+    """Return the Triage header image URL."""
+    return 'https://mghunch.github.io/hunch-assets/Header_Triage.png'
 
 
 def increment_client_job_number(client_code):
